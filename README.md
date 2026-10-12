@@ -1,51 +1,66 @@
 # Krypt
 
-Krypt is a user-friendly blockchain application that allows you to send cryptocurrency seamlessly. With this tool, you can connect your wallet, find the recipient's account number, and include a memorable keyword. The transaction record will be displayed on the site along with a relevant GIF corresponding to the keyword, making the experience enjoyable and personalized.
+A React and Solidity learning project that connects an Ethereum wallet to a transfer interface and a separate on-chain transaction log. The repository name is `Blockchain`; the application is called Krypt.
 
-## Technologies
+**Status: source available; current deployment and transaction flow have not been verified.** The checked-in network configuration uses legacy Ropsten settings and needs replacement before the app can be exercised on a current test network.
 
-The following technologies are used in Krypt:
+## What the code demonstrates
 
-- **React**: A JavaScript library for building user interfaces.
+- Wallet connection and account/balance reads through MetaMask and Ethers.js.
+- React context for form state, loading state and transaction history.
+- A wallet request to transfer ETH to a recipient address.
+- A Solidity contract that stores sender, recipient, amount, message, timestamp and keyword.
+- History rendering with keyword-based GIF lookup.
+- React/Vite interface styling with Tailwind CSS.
 
-- **Solidity**: The programming language for creating smart contracts on the Ethereum blockchain.
+## How the transfer flow works
 
-- **Ethers.js**: A JavaScript library for interacting with the Ethereum blockchain, replacing Web3.js.
+```text
+React form → MetaMask ETH-transfer request
+           → separate contract call to record metadata
+           → wait for the contract receipt → refresh history
+```
 
-- **Node.js**: A JavaScript runtime environment for server-side development.
+These are **two separate blockchain transactions**. The `Transactions` contract records metadata; it does not execute or verify the ETH transfer. If the recording step fails, the ETH transfer may still have been submitted. The displayed history is a contract log, not an independently verified payment ledger.
 
-- **Vite**: A build tool that provides fast and efficient development.
+## Repository map
 
-- **HTML & CSS**: Front-end web development for the user interface.
+| Path | Responsibility |
+| --- | --- |
+| `client/` | React 17, Vite and Tailwind interface |
+| `client/src/context/TransactionContext.jsx` | Wallet interaction and transaction state |
+| `client/src/utils/constants.js` | Contract address and ABI configuration |
+| `client/src/hooks/useFetch.jsx` | GIF lookup |
+| `smart_contract/contracts/Transactions.sol` | Transaction metadata storage |
+| `smart_contract/scripts/deploy.js` | Hardhat deployment script |
+| `smart_contract/hardhat.config.js` | Legacy deployment configuration |
 
-- **Tailwind CSS**: A utility-first CSS framework to streamline the styling of web pages.
+## Local interface setup
 
-- **Blockchain**: The core technology powering secure and decentralized transactions.
+Install Node.js/npm compatible with the repository's older Vite and Hardhat dependencies. From the repository root:
 
-- **MetaMask Extension**: A popular Ethereum wallet and gateway to blockchain applications.
+```sh
+cd client
+npm install
+npm run dev
+```
 
-- **GIF Integration**: To add a creative touch to transaction records.
+This starts the interface only. Wallet/history operations also require a deployed contract, a matching ABI/address and MetaMask connected to the same network. No working contract deployment is claimed here.
 
-## Prerequisites
+## Before exercising wallet operations
 
-Before you get started with Krypt, make sure you have the following:
+1. Replace the legacy network configuration with a local development chain or a supported test network.
+2. Remove hard-coded credentials from the deployment configuration and read secrets from ignored environment files. Treat any committed RPC key and wallet private key as exposed; revoke/replace them before reuse. Removing a value from the latest file does not remove it from Git history.
+3. Deploy `Transactions.sol`, then update the client contract address and ABI.
+4. Use a separate development wallet and test funds.
+5. Verify transfer and log failure handling, account/network switching and transaction confirmation states.
 
-- [MetaMask Extension](https://metamask.io/) installed on your web browser.
+## Limits and further work
 
-## Getting Started
+The current source needs stronger input validation and recovery when wallet requests fail. The smart-contract test file is a scaffold; it is not evidence of coverage for `Transactions.sol`. Dependency upgrades, contract tests and a reproducible test-network demo would make this a stronger portfolio project.
 
-Follow these simple steps to send cryptocurrency effortlessly:
-
-1. **Connect Your Wallet**: To initiate the process, connect your wallet to the Krypt website using the MetaMask Extension. This step ensures secure and authenticated transactions.
-
-2. **Recipient's Account Number**: You'll need the account number of the person you want to send cryptocurrency to. Enter this account number to identify the recipient.
-
-3. **Keyword**: In the keyword section, type whatever you like, as it's just for reference and will be stored in the transaction record.
-
-4. **Transaction Record**: The transaction record will be displayed on the site, and a GIF related to the keyword will accompany it, making the experience fun and personalized.
-
-Enjoy using Krypt for seamless cryptocurrency transactions!
+No security audit, production readiness or transaction-volume claim is made.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+No root LICENSE file is present. The contract declares `UNLICENSED`; the earlier README's MIT-license statement was unsupported.
